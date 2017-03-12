@@ -1,0 +1,60 @@
+const apiUrl = 'https://cors-anywhere.herokuapp.com/http://quotesondesign.com/wp-json/posts?filter[orderby]=rand&filter[posts_per_page]=1'
+
+const makeTwitterLink = (text) => {
+  const params = new URLSearchParams();
+  params.append('hashtags', 'quotes')
+  params.append('related', 'freecodecamp')
+  params.append('text', text)
+  return 'https://twitter.com/intent/tweet?' + params
+}
+
+const renderQuote = (quote => {
+  return `
+    <div class="quote-content">
+      ${quote.content}
+    </div>
+    <div class="quote-author">
+      <p>${quote.title}</p>
+    </div>
+  `
+})
+
+const render = (quote => {
+  const html = renderQuote(quote)
+  const $root = document.getElementById('root')
+  $root.innerHTML = html
+  
+  const quoteText = document
+    .querySelector('.quote-content p')
+    .innerText
+  const $twitterLink = document.querySelector('.twitter-button a')
+  $twitterLink.href = makeTwitterLink(
+    '\u201c' + quoteText + '\u201d \u2014' + quote.title)
+})
+
+const updateQuote = () => {
+  const fetchOpts = {
+    mode: 'cors',
+    headers: {
+      'Content-Type': 'application/json',
+      'Cache-Control': 'no-cache',
+    },
+  }
+  fetch(apiUrl, fetchOpts)
+    .then(response => response.json())
+    .then(data => data[0])
+    .then(render)
+}
+
+const setupEventHandlers = () => {
+  const $newQuoteButton = document.querySelector('.new-quote-button')
+  
+  $newQuoteButton.addEventListener('click', updateQuote)
+}
+
+const init = () => {
+  updateQuote()
+  setupEventHandlers()
+}
+
+init()
